@@ -1,0 +1,104 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Nanny {
+  NanID         String      @id @default(uuid())
+  N_FName       String
+  N_MName       String?
+  N_LName       String?
+  N_Address     String
+  N_Phone       String   @unique
+  N_BDate       DateTime
+  N_Sex         String   @db.Char(1)
+  N_HireDate    DateTime
+  N_Salary      Int
+  EnglishSkill  String?  @db.Char(1)
+  MandarinSkill String?  @db.Char(1)
+  Username      String   @unique
+  Password      String
+  Take_Care     Take_Care[]
+}
+
+model Hospitality {
+  HostID     String      @id @default(uuid())
+  H_FName    String
+  H_MName    String?
+  H_LName    String?
+  H_Phone    String   @unique
+  H_BDate    DateTime
+  H_Sex      String   @db.Char(1)
+  H_HireDate DateTime
+  H_Salary   Int
+  Username   String   @unique
+  Password   String
+  Payment    Payment[]
+}
+
+model Parent {
+  ParentID   String      @id @default(uuid())
+  P_FName    String
+  P_MName    String?
+  P_LName    String?
+  P_Address  String
+  P_Phone    String   @unique
+  Relationship String @db.Char(1)
+  Username   String   @unique
+  Password   String
+  Child      Child[]
+}
+
+model Child {
+  ChildID    String      @id @default(uuid())
+  C_FName    String
+  C_MName    String?
+  C_LName    String?
+  C_BDate    DateTime
+  C_Sex      String   @db.Char(1)
+  Parent_ID1 String
+  Parent     Parent   @relation(fields: [Parent_ID1], references: [ParentID])
+  Take_Care  Take_Care[]
+  Payment    Payment[]
+}
+
+model Payment {
+  PaymentNo       String     @id @default(uuid())
+  PaymentDate     DateTime
+  TotalAmount     Int
+  Hos_ID          String
+  Ch_ID2          String
+  PaymentMethod_ID String
+  Hospitality     Hospitality @relation(fields: [Hos_ID], references: [HostID])
+  Child           Child       @relation(fields: [Ch_ID2], references: [ChildID])
+  PaymentMethod   PaymentMethod @relation(fields: [PaymentMethod_ID], references: [PaymentMethodNo])
+  Take_Care     Take_Care[]
+}
+
+model PaymentMethod {
+  PaymentMethodNo  String      @id @default(uuid())
+  PaymentMethodName String
+  Payment          Payment[]
+}
+
+model Take_Care {
+  TakeCare_ID String      @id @default(uuid())
+  Nan_ID      String 
+  Ch_ID1      String
+  CareStartDate DateTime
+  CareEndDate DateTime
+  PaymentNo  String
+  Nanny       Nanny    @relation(fields: [Nan_ID], references: [NanID])
+  Child       Child    @relation(fields: [Ch_ID1], references: [ChildID])
+  Payment       Payment     @relation(fields: [PaymentNo], references: [PaymentNo])
+}
